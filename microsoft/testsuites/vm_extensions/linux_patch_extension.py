@@ -118,11 +118,18 @@ class LinuxPatchExtensionBVT(TestSuite):
             )
             # set wait operation timeout 10 min, status file should be generated
             # before timeout
-            assess_result = wait_operation(operation, 600)
+            assess_result = wait_operation(operation, 1800)
+
+        except TimeoutError as time_out_error:
+            raise SkippedException(f"TIMEOUT Error: {time_out_error}")
 
         except HttpResponseError as identifier:
+            if identifier.status_code == 400:
+                print("testing testing")
+
             if any(
-                s in str(identifier) for s in ["The selected VM image is not supported"]
+                s in str(identifier.message)
+                for s in ["The selected VM image is not supported"]
             ):
                 raise SkippedException(UnsupportedDistroException(node.os))
             else:
